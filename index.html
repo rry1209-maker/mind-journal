@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마음 기록장 - 오늘의 나를 돌아보는 5분</title>
+    <!-- Google Fonts: Prettiness and Clarity -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --canva-purple-deep: #7d2ae8;
+            --canva-purple-light: #f3ebff;
+            --canva-soft-bg: #f8f9fe;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--canva-soft-bg);
+            margin: 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(125, 42, 232, 0.1);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Gaegu', cursive;
+            color: var(--canva-purple-deep);
+            /* Increased font size to be roughly 2x the description text (approx 2rem -> 2.5rem or more) */
+            font-size: 3rem; 
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .description {
+            font-size: 1.125rem; /* Standard text size */
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #555;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--canva-purple-light);
+            border-radius: 15px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--canva-purple-deep);
+        }
+
+        .record-btn {
+            background-color: var(--canva-purple-deep);
+            color: white;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, background-color 0.3s;
+            box-shadow: 0 5px 15px rgba(125, 42, 232, 0.3);
+        }
+
+        .record-btn:hover {
+            background-color: #6a24c5;
+            transform: translateY(-2px);
+        }
+
+        /* Heart Bubble Background Effect */
+        .heart-bubble {
+            position: fixed;
+            bottom: -50px;
+            background: rgba(125, 42, 232, 0.1);
+            mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
+            mask-size: contain;
+            -webkit-mask-size: contain;
+            background-color: var(--canva-purple-deep);
+            opacity: 0.3;
+            pointer-events: none;
+            animation: rise 10s linear infinite;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Success Modal Styles */
+        #success-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 350px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            z-index: 99;
+        }
+
+        .big-heart {
+            font-size: 4rem;
+            color: #ff4d6d;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--canva-purple-deep);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden { display: none; }
+
+        /* 음악 재생 버튼 스타일 */
+        .music-btn {
+            position: fixed; /* 화면 우측 상단에 항상 고정 */
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--canva-purple-light);
+            color: var(--canva-purple-deep);
+            padding: 10px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(125, 42, 232, 0.15);
+            transition: all 0.3s;
+            z-index: 50;
+        }
+
+        .music-btn:hover {
+            background: var(--canva-purple-light);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 배경 음악 요소 (bg.mp3 연결) -->
+    <audio id="bg-music" loop>
+        <source src="bg.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 음악 컨트롤 버튼 -->
+    <button id="music-toggle" class="music-btn" onclick="toggleMusic()">
+        🎵 음악 켜기
+    </button>
+
+    <!-- Heart background container -->
+    <div id="heart-bg-container"></div>
+
+    <div class="main-container">
+        <h1>오늘의 나를 돌아보는 5분</h1>
+        <p class="description">지금 이 순간의 마음을 솔직하게 적어보아요.</p>
+
+        <div class="input-group">
+            <label for="student-name">이름</label>
+            <input type="text" id="student-name" placeholder="이름을 알려주세요 (예: 홍길동)">
+        </div>
+
+        <div class="input-group">
+            <label for="mind-content">오늘의 마음 성찰</label>
+            <textarea id="mind-content" rows="6" placeholder="오늘 하루는 어땠나요? 어떤 감정을 느꼈는지 편하게 적어보세요."></textarea>
+        </div>
+
+        <button class="record-btn" onclick="submitRecord()">
+            <span id="btn-text">마음 기록하기</span>
+            <div id="btn-loader" class="loader hidden"></div>
+        </button>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="modal-overlay" class="modal-overlay"></div>
+    <div id="success-modal">
+        <div class="big-heart">❤️</div>
+        <h2 class="text-2xl font-bold mt-4 mb-2">기록 완료!</h2>
+        <p class="text-gray-600 mb-6">오늘의 마음이 잘 기록되었습니다!</p>
+        <button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-full font-bold transition">닫기</button>
+    </div>
+
+    <script>
+        // 1. Generate floating heart bubbles
+        function createHearts() {
+            const container = document.getElementById('heart-bg-container');
+            const count = 20;
+            
+            for (let i = 0; i < count; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-bubble';
+                
+                const size = Math.random() * 40 + 20 + 'px';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.width = size;
+                heart.style.height = size;
+                heart.style.animationDelay = Math.random() * 10 + 's';
+                heart.style.animationDuration = Math.random() * 5 + 7 + 's';
+                
+                container.appendChild(heart);
+            }
+        }
+
+        // 2. Submit record with localized timestamp
+        async function submitRecord() {
+            const name = document.getElementById('student-name').value;
+            const content = document.getElementById('mind-content').value;
+
+            if (!name || !content) {
+                alert("이름과 성찰 내용을 모두 적어주세요!");
+                return;
+            }
+
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+
+            const now = new Date();
+            const timestamp = now.toLocaleString("ko-KR", { 
+                timeZone: "Asia/Seoul",
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const data = {
+                studentName: name,
+                journalContent: content,
+                submittedAt: timestamp
+            };
+
+            try {
+                console.log("Submitting data:", data);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                showSuccess();
+                clearForm();
+            } catch (error) {
+                console.error("Submission error:", error);
+                alert("기록 중 오류가 발생했어요. 다시 시도해 주세요.");
+            } finally {
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
+        }
+
+        // 3. Show success UI and heart burst
+        function showSuccess() {
+            document.getElementById('modal-overlay').style.display = 'block';
+            document.getElementById('success-modal').style.display = 'block';
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(createBurstHeart, i * 100);
+            }
+        }
+
+        function createBurstHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.style.position = 'fixed';
+            heart.style.left = '50%';
+            heart.style.top = '50%';
+            heart.style.fontSize = '2rem';
+            heart.style.pointerEvents = 'none';
+            heart.style.zIndex = '1000';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 10 + 5;
+            const vx = Math.cos(angle) * velocity;
+            const vy = Math.sin(angle) * velocity;
+            
+            document.body.appendChild(heart);
+            
+            let x = window.innerWidth / 2;
+            let y = window.innerHeight / 2;
+            let opacity = 1;
+
+            const move = () => {
+                x += vx;
+                y += vy;
+                opacity -= 0.02;
+                heart.style.left = x + 'px';
+                heart.style.top = y + 'px';
+                heart.style.opacity = opacity;
+                
+                if (opacity > 0) {
+                    requestAnimationFrame(move);
+                } else {
+                    heart.remove();
+                }
+            };
+            requestAnimationFrame(move);
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('success-modal').style.display = 'none';
+        }
+
+        function clearForm() {
+            document.getElementById('student-name').value = '';
+            document.getElementById('mind-content').value = '';
+        }
+
+        // 4. 음악 재생/정지 제어
+        let isMusicPlaying = false;
+        
+        function toggleMusic() {
+            const bgMusic = document.getElementById('bg-music');
+            const musicBtn = document.getElementById('music-toggle');
+            
+            // 기록에 집중할 수 있도록 볼륨을 30%로 잔잔하게 설정
+            bgMusic.volume = 0.3; 
+
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicBtn.innerText = '🎵 음악 켜기';
+            } else {
+                bgMusic.play().then(() => {
+                    musicBtn.innerText = '⏸️ 음악 끄기';
+                }).catch(err => {
+                    console.log("Audio playback failed: ", err);
+                    alert("음악 파일(bg.mp3)을 찾을 수 없습니다. 같은 폴더에 있는지 확인해 주세요.");
+                });
+            }
+            isMusicPlaying = !isMusicPlaying;
+        }
+
+        window.onload = () => {
+            createHearts();
+        };
+    </script>
+</body>
+</html>
